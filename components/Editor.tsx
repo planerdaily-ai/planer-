@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Page } from '../types';
 import { generatePlanContent } from '../services/geminiService';
 import { 
@@ -20,6 +20,13 @@ export const Editor: React.FC<EditorProps> = ({ page, isNew, language, onSave, o
   const [content, setContent] = useState(page?.content || '');
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Sync local state with props when page changes
+  useEffect(() => {
+    setTitle(page?.title || '');
+    setContent(page?.content || '');
+    setAiPrompt('');
+  }, [page, isNew]);
 
   const t = {
     ar: {

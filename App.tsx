@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AppState, Page, Template, ToastMessage } from './types';
-import { ALL_TEMPLATES, STORAGE_KEYS } from './constants';
+import { ALL_TEMPLATES, STORAGE_KEYS, CATEGORIES } from './constants';
 import { Sidebar } from './components/Sidebar';
 import { CategoryNav } from './components/CategoryNav';
 import { Editor } from './components/Editor';
 import { ToastContainer } from './components/ToastContainer';
 import { 
-  Search, Menu, Crown, Star, Download, Clock, Languages 
+  Search, Menu, Crown, Star, Download, Languages, Info 
 } from 'lucide-react';
 
 // Helper to generate ID
@@ -376,7 +376,12 @@ const App = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
-                {filteredTemplates.map((template) => (
+                {filteredTemplates.map((template) => {
+                  const category = CATEGORIES.find(c => c.id === template.category);
+                  const categoryName = state.language === 'ar' ? category?.name : category?.nameEn;
+                  const description = state.language === 'ar' ? template.description : template.descriptionEn;
+
+                  return (
                   <div 
                     key={template.id}
                     onClick={() => handleSelectTemplate(template)}
@@ -393,15 +398,48 @@ const App = () => {
                       </div>
                     )}
                     
-                    <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-700 mb-4 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
-                       <Clock size={24} />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shrink-0">
+                           {category?.icon}
+                        </div>
+                        <div className="flex flex-col items-start">
+                           <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">
+                             {categoryName}
+                           </span>
+                           
+                           {/* Info Button with Tooltip */}
+                           <div className="relative group/info z-20">
+                              <button 
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); }}
+                                className="flex items-center gap-1 text-xs text-primary hover:underline bg-primary/5 hover:bg-primary/10 px-2 py-0.5 rounded-full transition-colors"
+                              >
+                                <Info size={10} />
+                                <span>{state.language === 'ar' ? 'تفاصيل' : 'More Info'}</span>
+                              </button>
+                              
+                              {/* Tooltip */}
+                              <div className={`
+                                absolute bottom-full mb-2 w-52 bg-gray-900/95 backdrop-blur-sm text-white text-xs p-3 rounded-xl shadow-xl
+                                opacity-0 group-hover/info:opacity-100 pointer-events-none group-hover/info:pointer-events-auto transition-all duration-200
+                                ${state.language === 'ar' ? '-right-2' : '-left-2'} transform translate-y-2 group-hover/info:translate-y-0
+                                z-30
+                              `}>
+                                <p className="leading-relaxed">{description}</p>
+                                <div className={`absolute top-full ${state.language === 'ar' ? 'right-4' : 'left-4'} -mt-0.5 border-4 border-transparent border-t-gray-900/95`} />
+                              </div>
+                           </div>
+                        </div>
+                      </div>
                     </div>
 
                     <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 line-clamp-1">
                       {state.language === 'ar' ? template.name : template.nameEn}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 h-10">
-                      {state.language === 'ar' ? template.description : template.descriptionEn}
+                    
+                    <p className="text-sm text-gray-400 dark:text-gray-500 line-clamp-1 mb-4 h-6 opacity-60">
+                      {description}
                     </p>
 
                     <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-4 transition-colors duration-300">
@@ -415,7 +453,7 @@ const App = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                );})}
               </div>
 
               {filteredTemplates.length === 0 && (

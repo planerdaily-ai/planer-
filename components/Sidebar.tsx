@@ -2,7 +2,7 @@ import React from 'react';
 import { Page } from '../types';
 import { 
   Plus, FileText, Star, Crown, Moon, Sun, Trash2, 
-  ChevronRight, ChevronLeft, LayoutDashboard, Languages 
+  ChevronRight, ChevronLeft, LayoutDashboard, Languages, Home 
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -31,8 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'Global Planner',
       premium: 'عضو مميز',
       free: 'نسخة مجانية',
-      newPage: 'صفحة جديدة',
-      savedPages: 'صفحاتي المحفوظة',
+      dashboard: 'الرئيسية',
+      savedPages: 'صفحاتي',
       noPages: 'لا توجد صفحات محفوظة',
       untitled: 'بدون عنوان',
       upgrade: 'ترقية للعضوية المميزة',
@@ -44,8 +44,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'Global Planner',
       premium: 'Premium Member',
       free: 'Free Version',
-      newPage: 'New Page',
-      savedPages: 'Saved Pages',
+      dashboard: 'Dashboard',
+      savedPages: 'My Pages',
       noPages: 'No saved pages',
       untitled: 'Untitled',
       upgrade: 'Upgrade to Premium',
@@ -96,49 +96,66 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Main Actions */}
-        <div className="p-4">
-          <button 
-            onClick={onNewPage}
-            className="w-full py-3 px-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all flex items-center justify-center gap-2 font-bold group"
-          >
-            <Plus size={20} className="group-hover:rotate-90 transition-transform" />
-            {t.newPage}
-          </button>
-        </div>
-
-        {/* Saved Pages List */}
+        {/* Navigation & Pages List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-1 no-scrollbar">
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-3 px-2">{t.savedPages}</h3>
+          
+          {/* Dashboard / Home Link */}
+          <div 
+            onClick={onNewPage}
+            className={`
+              group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all mb-6
+              ${!activePageId 
+                ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}
+            `}
+          >
+            <Home size={20} />
+            <span className="font-bold text-sm">{t.dashboard}</span>
+            {!activePageId && (
+               <div className={`absolute w-1 h-6 bg-white/20 rounded-full ${language === 'ar' ? 'left-2' : 'right-2'}`} />
+            )}
+          </div>
+
+          {/* Pages Section Header */}
+          <div className="flex items-center justify-between px-2 mb-2">
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t.savedPages}</h3>
+            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 py-0.5 px-2 rounded-full">
+              {pages.length}
+            </span>
+          </div>
+
+          {/* Pages List */}
           {pages.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 dark:text-gray-600 transition-colors duration-300">
-              <FileText size={40} className="mx-auto mb-2 opacity-50" />
-              <p className="text-sm">{t.noPages}</p>
+            <div className="text-center py-8 text-gray-400 dark:text-gray-600 transition-colors duration-300 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl mx-2">
+              <FileText size={32} className="mx-auto mb-2 opacity-50" />
+              <p className="text-xs">{t.noPages}</p>
             </div>
           ) : (
-            pages.map(page => (
-              <div 
-                key={page.id}
-                onClick={() => onSelectPage(page.id)}
-                className={`
-                  group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors
-                  ${activePageId === page.id 
-                    ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' 
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}
-                `}
-              >
-                <div className="flex items-center gap-3 truncate">
-                  <FileText size={16} className={activePageId === page.id ? 'text-primary' : 'text-gray-400'} />
-                  <span className="text-sm font-medium truncate">{page.title || t.untitled}</span>
-                </div>
-                <button 
-                  onClick={(e) => onDeletePage(page.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 rounded-md transition-all"
+            <div className="space-y-1">
+              {pages.map(page => (
+                <div 
+                  key={page.id}
+                  onClick={() => onSelectPage(page.id)}
+                  className={`
+                    group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors
+                    ${activePageId === page.id 
+                      ? 'bg-gray-100 dark:bg-gray-800 text-primary dark:text-white font-medium' 
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'}
+                  `}
                 >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))
+                  <div className="flex items-center gap-3 truncate flex-1">
+                    <FileText size={18} className={activePageId === page.id ? 'text-primary' : 'text-gray-300 dark:text-gray-600'} />
+                    <span className="text-sm truncate">{page.title || t.untitled}</span>
+                  </div>
+                  <button 
+                    onClick={(e) => onDeletePage(page.id, e)}
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -147,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!isPro && (
             <button 
               onClick={onUpgrade}
-              className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm font-bold animate-pulse"
+              className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm font-bold mb-3"
             >
               <Star size={16} fill="currentColor" />
               {t.upgrade}
